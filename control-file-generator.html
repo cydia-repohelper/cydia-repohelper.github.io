@@ -1,1 +1,190 @@
-
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>Cydia package control file Generator</title>
+<style type="text/css">
+* {
+	font-family: sans-serif;
+}
+input {
+	border-radius: 6px;
+	margin-right: 3px;
+}
+input:focus {
+	box-shadow: 0px 0px 5px #5FA6FF;
+}
+input[type=text], input[type=email], input[type=url] {
+	width: 180px;
+}
+</style>
+</head>
+<body>
+<script type="text/javascript">
+function $(a) {
+	return document.getElementById(a);
+}
+function generate() {
+	var out = "";
+	var t = {
+		"pkgname": "Package",
+		"version": "Version",
+		"arch": "Architecture",
+		//"priority": "Priority",
+		"replaces": "Replaces",
+		"conflicts": "Conflicts",
+		"provides": "Provides",
+		"homepage": "Homepage",
+		"disname": "Name",
+		"section": "Section",
+	};
+	for(nam in t) {
+		if($(nam).value != "")
+			out += t[nam] + ": " + $(nam).value + "\n";
+	}
+	var t = {
+		"maintainer": ["Maintainer", 2, function(a) { return a[0] + " <" + a[1] + ">"; }],
+		"author": ["Author", 2, function(a) { return a[0] + " <" + a[1] + ">"; }],
+		"sponsor": ["Sponsor", 2, function(a) { return a[0] + " <" + a[1] + ">"; }],
+	};
+	for(nam in t) {
+		if($(nam + "_1").value != "") {
+			var args = [];
+			for(var i = 1; i <= t[nam][1]; i++)
+				args[i-1] = $(nam + "_" + i).value;
+			out += t[nam][0] + ": " + t[nam][2](args) + "\n";
+		}
+	}
+	var dep = $("depends").value;
+	if($("reqarch").value != "") {
+		if(dep.replace(" ", "") != "")
+			dep = dep + ", " + $("reqarch").value;
+		else
+			dep = $("reqarch").value;
+	}
+	out += "Depends: " + dep + "\n";
+	out += "Description: " + $("desc_short").value + "\n";
+	if($("desc_long").value != "") {
+		var l = $("desc_long").value.split("\n");
+		for(var i = 0; i < l.length; i++)
+			if(l[i].replace(" ", "") != "")
+				out += " " + l[i] + "\n";
+	}
+	var tags = [];
+	if($("essential").checked) {
+		out += "Essential: yes\n";
+		tags[tags.length] = "cydia::essential";
+	}
+	tags[tags.length] = "role::" + $("role").value;
+	var t = [
+		"commercial",
+		"console",
+		"daemon",
+		"extension",
+		"library",
+		"uikit",
+		"x"
+	];
+	for(k in t) {
+		var v = t[k];
+		if($("p_" + v).checked)
+			tags[tags.length] = "purpose::" + v;
+	}
+	if(tags.length > 0)
+		out += "Tags: " + tags.join(", ") + "\n";
+	$("out").value = out;
+	return false; // Do not reload the page
+}
+</script>
+<form onsubmit="return generate();">
+<h3>Simple stuff</h3>
+<label>Package name: </label><input type="text" id="pkgname" required /><br />
+<label>Description (short): </label><input type="text" id="desc_short" required /><br />
+<label>Version: </label><input type="text" id="version" placeholder="1.0-1" required /><br />
+<!-- <label>Architecture: </label><input type="text" id="arch" placeholder="iphoneos-arm" required /><br /> -->
+<input type="hidden" id="arch" value="iphoneos-arm" />
+<label>Maintainer: </label><input type="text" id="maintainer_1" placeholder="Your Name" required /><input type="email" id="maintainer_2" placeholder="you@example.com" required /><br />
+<label>Author: </label><input type="text" id="author_1" placeholder="Some Name" /><input type="email" id="author_2" placeholder="author@example.com" /><br />
+<label>Sponsor: </label><input type="text" id="sponsor_1" placeholder="Company or Person" /><input type="url" id="sponsor_2" placeholder="http://company.example.com/" /><br />
+<label>Dependencies: </label><input type="text" id="depends" /><br />
+<label>Website: </label><input type="url" id="homepage" /><br />
+<label>Display name: </label><input type="text" id="disname" required /><br />
+<label>Section: </label><select id="section" required>
+	<option value="Addons">Addons</option>
+	<option value="Administration">Administration</option>
+	<option value="Archiving">Archiving</option>
+	<option value="Books">Books</option>
+	<option value="Carrier_Bundles">Carrier Bundles</option>
+	<option value="Data_Storage">Data Storage</option>
+	<option value="Development">Development</option>
+	<option value="Dictionaries">Dictionaries</option>
+	<option value="Education">Education</option>
+	<option value="Entertainment">Entertainment</option>
+	<option value="Fonts">Fonts</option>
+	<option value="Games">Games</option>
+	<option value="Health_and_Fitness">Health and Fitness</option>
+	<option value="Java">Java</option>
+	<option value="Keyboards">Keyboards</option>
+	<option value="Localization">Localization</option>
+	<option value="Messaging">Messaging</option>
+	<option value="Multimedia">Multimedia</option>
+	<option value="Navigation">Navigation</option>
+	<option value="Networking">Networking</option>
+	<option value="Packaging">Packaging</option>
+	<option value="Productivity">Productivity</option>
+	<option value="Repositories">Repositories</option>
+	<option value="Ringtones">Ringtones</option>
+	<option value="Scripting">Scripting</option>
+	<option value="Security">Security</option>
+	<option value="Site-Specific_Apps">Site-Specific Apps</option>
+	<option value="Social">Social</option>
+	<option value="Soundboards">Soundboards</option>
+	<option value="System">System</option>
+	<option value="Terminal_Support">Terminal Support</option>
+	<option value="Text_Editors">Text Editors</option>
+	<option value="Themes">Themes</option>
+	<option value="Toys">Toys</option>
+	<option value="Tweaks">Tweaks</option>
+	<option value="Utilities">Utilities</option>
+	<option value="Wallpaper">Wallpaper</option>
+	<option value="Widgets">Widgets</option>
+	<option value="X_Window">X Window</option>
+</select><br />
+<h3>Advanced stuff</h3>
+<label>Description (long, HTML allowed): </label><br />
+<textarea id="desc_long" rows="10" cols="50"></textarea><br />
+<!-- <label>Priority: </label><select id="priority" required>
+	<option value="required">Required - Packages which are necessary for the proper functioning of the system.</option>
+	<option value="important">Important - Important programs, just a bare minimum of commonly-expected and necessary tools.</option>
+	<option value="standard">Standard - These packages provide a reasonably small but not too limited character-mode system.</option>
+	<option value="optional" selected>Optional - This is all the software that you might reasonably want to install.</option>
+	<option value="extra">Extra - This contains all packages that conflict with others with required, important, standard or optional priorities.</option>
+</select><br /> -->
+<label>Replaces: </label><input type="text" id="replaces" /><br />
+<label>Conflicts: </label><input type="text" id="conflicts" /><br />
+<label>Provides: </label><input type="text" id="provides" /><br />
+<label>Essential: </label><input type="checkbox" id="essential" /><br />
+<label>Purposes: </label><br /><div style="margin-left: 10px;">
+	<input type="checkbox" id="p_commercial" /><label>Commercial</label><br />
+	<input type="checkbox" id="p_console" /><label>Console</label><br />
+	<input type="checkbox" id="p_daemon" /><label>Daemon</label><br />
+	<input type="checkbox" id="p_extension" /><label>Extension</label><br />
+	<input type="checkbox" id="p_library" /><label>Library</label><br />
+	<input type="checkbox" id="p_uikit" /><label>UIKit</label><br />
+	<input type="checkbox" id="p_x" /><label>X Window</label><br />
+</div>
+<label>Role: </label><select id="role" required>
+	<option value="enduser">User</option>
+	<option value="hacker">Hacker</option>
+	<option value="developer">Developer</option>
+</select><br />
+<label>Min. required Architecture: </label><select id="reqarch" required>
+	<option value="">ARMv6</option>
+	<option value="gsc.armv7 | cy+cpu.arm64">ARMv7</option>
+	<option value="cy+cpu.arm64">AArch64</option>
+</select><br />
+<input type="submit" value="Generate!" />
+</form>
+<hr />
+<textarea id="out" rows="20" cols="75"></textarea>
+</body>
+</html>
